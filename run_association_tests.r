@@ -5,8 +5,8 @@ library(SKAT)
 
 # source SKAT-functions modified in order to extract extra information
 # (such as kurtosis or df estimates)
-for (i in 1:length(dir('/home/bulllab/gaw18/gaw19/jshin/scripts/R/',full.name=TRUE))) {
-  source(dir('/home/bulllab/gaw18/gaw19/jshin/scripts/R/',full.name=TRUE)[i])
+for (i in 1:length(dir('/home/bulllab/gaw18/gaw19/jshin/scripts/SKAT_R/',full.name=TRUE))) {
+  source(dir('/home/bulllab/gaw18/gaw19/jshin/scripts/SKAT_R/',full.name=TRUE)[i])
 }
 assignInNamespace("SKAT_PValue_Logistic_VarMatching",
                   SKAT_PValue_Logistic_VarMatching_JS,ns="SKAT")
@@ -25,7 +25,7 @@ assignInNamespace("SKAT_Logistic_VarMatching_GetParam",
 for (i in 1:length(dir('/home/bulllab/jshin/pmlr11/R/',full.name=TRUE))){
 source(dir('/home/bulllab/jshin/pmlr11/R/',full.name=TRUE)[i])
 }
-
+rm(i)
 # ------------------ read in data ------------------#
 # (phenotype + genotype - created by 'Make_analysible_data.Rnw'
 # in JS's desktop-should mv file in the future)
@@ -45,7 +45,7 @@ pos <- NA #not-available yet
 # convert the numeric 'hypt' column into factor for pmlr() function
 data$y <- as.factor(data$hypt)
 for(i in first.G.col:last.G.col){
-  
+  print(i)
   n00 = sum(data$hypt==0 & data[,i]==0,na.rm=T)
   n01 = sum(data$hypt==0 & data[,i]==1,na.rm=T)
   n02 = sum(data$hypt==0 & data[,i]==2,na.rm=T)
@@ -97,7 +97,7 @@ for(i in first.G.col:last.G.col){
 
   #cutoff of the missing rates of the SNPs - default is 15%
   #not sure if I remove SNPs with missing rate >= 15%
-  missing_rate_threshold = 0.5
+  missing_rate_threshold = 1 # not filtering anything
   
   #score test with small-sample-adjusted variance  
   skat.no.kurtosis.adj <- SKAT(Z,obj.no.kurtosis.adj,weights=1,
@@ -114,7 +114,7 @@ for(i in first.G.col:last.G.col){
   pval_score_var_kurt_adj <- skat.kurtosis.adj$p.value
 
   res <- cbind.data.frame(marker,pos,allele.freq,
-    n00,n01,n02,n10,n11,n12,n,
+    n00,n01,n02,n10,n11,n12,n,missing_rate,
     beta_MLE,SE.beta_MLE,beta_PMLE,SE.beta_PMLE,
     stat_lrt,stat_plrt,
     stat_score,stat_score_var_adj,stat_score_var_kurt_adj,
