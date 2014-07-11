@@ -121,8 +121,13 @@ for(i in first.G.col:last.G.col){
     df_score_var_kurt_adj,
     pval_lrt,pval_plrt,pval_score,pval_score_var_adj,pval_score_var_kurt_adj)
 
+  if(i==first.G.col){
+    #do this once
+    write.table(rbind(names(res)),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
+    quote=F,col.names=F,row.names=F,append=TRUE)
+  }
+
   write.table(rbind(res),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
     quote=F,col.names=F,row.names=F,append=TRUE)
 }
 
-names(res)
