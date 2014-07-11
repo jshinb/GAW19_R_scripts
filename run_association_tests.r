@@ -44,7 +44,6 @@ last.G.col = 19
 pos <- NA #not-available yet
 # convert the numeric 'hypt' column into factor for pmlr() function
 data$y <- as.factor(data$hypt)
-i=12
 for(i in first.G.col:last.G.col){
   
   n00 = sum(data$hypt==0 & data[,i]==0,na.rm=T)
@@ -64,30 +63,33 @@ for(i in first.G.col:last.G.col){
   print(reg.model)
 
   # standard likelihood ratio test
-  lrt_MLE.res = pmlr(reg.model, data=data, method="likelihood", penalized=F)
-  beta_MLE = lrt_MLE.res$coef[,,TRUE][marker]
-  SE.beta_MLE = sqrt(lrt_MLE.res$var[marker,marker,TRUE])
-  pval_beta_MLE = lrt_MLE.res$pval[,marker,TRUE]
+  lrt.res = pmlr(reg.model, data=data, method="likelihood", penalized=F)
+  stat_lrt = lrt.res$stat[,marker,TRUE]
+  pval_lrt = lrt.res$pval[,marker,TRUE]
+  beta_MLE = lrt.res$coef[,,TRUE][marker]
+  SE.beta_MLE = sqrt(lrt.res$var[marker,marker,TRUE])
     
   # penalized likelihood ratio test
-  plrt_MLE.res = pmlr(reg.model, data=data, method="likelihood", penalized=T)
-  beta_PMLE = plrt_MLE.res$coef[,,TRUE][marker]
-  SE.beta_PMLE = sqrt(plrt_MLE.res$var[marker,marker,TRUE])
-  pval_beta_PMLE = plrt_MLE.res$pval[,marker,TRUE]
+  plrt.res = pmlr(reg.model, data=data, method="likelihood", penalized=T)
+  stat_plrt = plrt.res$stat[,marker,TRUE]
+  pval_plrt = plrt.res$pval[,marker,TRUE]
+  beta_PMLE = plrt.res$coef[,,TRUE][marker]
+  SE.beta_PMLE = sqrt(plrt.res$var[marker,marker,TRUE])
 
   # standard score test
-  score_MLE.res = pmlr(reg.model, data=data, method="score", penalized=F)
-  stat_score_MLE = score_MLE.res$test$statistic[2]
-  pval_score_MLE = score_MLE.res$test$pvalue[2]
+  score.res = pmlr(reg.model, data=data, method="score", penalized=F)
+  stat_score = score.res$stat[,marker,TRUE]  
+  pval_score = score.res$pval[,marker,TRUE]
 
   do.not.run <- function(){
   #comparison.score
     lm0 = glm(y~1,data=data[!is.na(data[,i]),],family=binomial())
     lm1 = glm(reg.model,data=data[!is.na(data[,i]),],family=binomial())
     anova(lm0,lm1,test="Rao")
+    anova(lm0,lm1,test="Chi")
   }
   
-  #SKAT 
+  #SKAT - small-sample-adjustments to var or to var and kurtosis
   Z <- as.matrix(data[,i],ncol=1)
   # var-adj test
   obj.kurtosis.adj <- SKAT_Null_Model_MomentAdjust(hypt~1, data=data)
@@ -97,20 +99,30 @@ for(i in first.G.col:last.G.col){
   #not sure if I remove SNPs with missing rate >= 15%
   missing_rate_threshold = 0.5
   
-  skat.kurtosis.adj <- SKAT(Z,obj.kurtosis.adj,weights=1,
-                            missing_cutoff=missing_rate_threshold,estimate_MAF=2)
+  #score test with small-sample-adjusted variance  
   skat.no.kurtosis.adj <- SKAT(Z,obj.no.kurtosis.adj,weights=1,
                                missing_cutoff=missing_rate_threshold,estimate_MAF=2)
-  
+  stat_score_var_adj <- sqrt(2*skat.no.kurtosis.adj$param$df)*(skat.no.kurtosis.adj$Q-skat.no.kurtosis.adj$param$muQ)/sqrt(skat.no.kurtosis.adj$param$varQ)+skat.no.kurtosis.adj$param$df
+  pval_score_var_adj <- skat.no.kurtosis.adj$p.value
+
+
+  #score test with small-sample-adjusted variance and kurtosis
+  skat.kurtosis.adj <- SKAT(Z,obj.kurtosis.adj,weights=1,
+                            missing_cutoff=missing_rate_threshold,estimate_MAF=2)
+  df_score_var_kurt_adj <- skat.kurtosis.adj$param$df
+  stat_score_var_kurt_adj <- sqrt(2*df_score_var_kurt_adj)*(skat.kurtosis.adj$Q-skat.kurtosis.adj$param$muQ)/sqrt(skat.kurtosis.adj$param$varQ)+df_score_var_kurt_adj
+  pval_score_var_kurt_adj <- skat.kurtosis.adj$p.value
+
+  res <- cbind.data.frame(marker,pos,allele.freq,
+    n00,n01,n02,n10,n11,n12,n,
+    beta_MLE,SE.beta_MLE,beta_PMLE,SE.beta_PMLE,
+    stat_lrt,stat_plrt,
+    stat_score,stat_score_var_adj,stat_score_var_kurt_adj,
+    df_score_var_kurt_adj,
+    pval_lrt,pval_plrt,pval_score,pval_score_var_adj,pval_score_var_kurt_adj)
+
+  write.table(rbind(res),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
+    quote=F,col.names=F,row.names=F,append=TRUE)
 }
 
-res_colnames <- c("marker","pos","allele.freq",
-                  "n00","n01","n02","n10","n11","n12","n", #cell-numbers
-                  "beta_MLE","SE.beta_MLE","beta_PMLE","SE.beta_PMLE",#genetic effect estimates
-                  "stat_lrt_MLE","stat_plrt_MLE",#LRT test statistics
-                  "stat_score_MLE",
-                  "stat_SKAT_score_var_adj","stat_SKAT_score_var_kurt_adj",#score statistics
-                  "df_SKAT_score_var_kurt_adj",#df estimates from SKAG-var-kurt-adj
-                  "pval_lrt_MLE","pval_plrt_MLE", #LRT-pvalues
-                  "pval_score_MLE","pval_SKAT_score_var_adj","pval_SKAT_score_var_kurt_adj")#score statistics pvalues
-                  
+names(res)
