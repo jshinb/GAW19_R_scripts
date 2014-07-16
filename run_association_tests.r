@@ -131,17 +131,16 @@ for(i in first.G.col:last.G.col){
     pval_lrt,pval_plrt,pval_score,pval_score_var_adj,pval_score_var_kurt_adj)
 
   if(i==first.G.col){
+    #printing column names
     #do this once - using the default sep=" " 
     write.table(rbind(names(res)),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
-    quote=F,col.names=T,row.names=F,append=TRUE,sep=" ")
+    quote=F,col.names=F,row.names=F,append=TRUE,sep=" ")
   }
-  if(i!=first.G.col){
+
   write.table(rbind(res),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
     quote=F,col.names=F,row.names=F,append=TRUE,sep=" ")
-}
 
 }
-
 
 write.table(map.info, file = "/home/bulllab/gaw18/gaw19/results/chr3_MAP4,map",
   quote=F,col.names=T,row.names=F,sep=" ")
