@@ -10,4 +10,12 @@ GAW19_R_scripts
 === To-Do (july 16) ===
 * Need to think about the 'imputation' in SKAT - leave as is since it is the default option for SKAT??
 
-
+According to SKAT manual - 
+'impute.method' 
+a method to impute missing genotypes (default= "fixed"). 
+"random" imputes missing genotypes by generating 
+binomial(2,p) random variables (p is the MAF), 
+and "fixed" imputes missing genotypes by assigning 
+the mean genotype value (2p). 
+If you use "random", you will have different p-values for 
+different runs because imputed values are randomly assigned.
