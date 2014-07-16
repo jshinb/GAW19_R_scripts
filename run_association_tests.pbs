@@ -1,0 +1,34 @@
+## submit with qsub -V run_association_tests.pbs
+#!/bin/sh
+#PBS -S /bin/bash
+#PBS -l nodes=1:ppn=1,mem=16gb,walltime=2:00:00
+#PBS -m bae
+## replace following with your email address
+#PBS -M shin@lunenfeld.ca
+#PBS -N run_association_tests
+#PBS -o run_association_tests.out
+#PBS -e run_association_tests.err
+
+echo "Running on host: " `hostname`
+echo "Changing to directory from which script was submitted."
+cd $PBS_O_WORKDIR
+echo "Current working directory is now: " `pwd`
+
+# Print some useful environment variables.  This are also available to your 
+# program if you submitted your job with the -V option.
+echo "This job was submitted by user: $PBS_O_LOGNAME"
+echo "This job was submitted to host: $PBS_O_HOST"
+echo "This job was submitted to queue: $PBS_O_QUEUE"
+echo "PBS working directory: $PBS_O_WORKDIR"
+echo "PBS job id: $PBS_JOBID"
+echo "PBS array: $PBS_ARRAYID"
+echo "PBS job name: $PBS_JOBNAME"
+echo "PBS environment: $PBS_ENVIRONMENT"
+echo " "
+echo "This script is running on stat-cl node `hostname` "
+echo "Job started on: " `date`
+
+##################################################################
+# Commands to run the job
+
+R --vanilla -f/home/bulllab/gaw18/gaw19/jshin/scripts/run_association_tests.r
