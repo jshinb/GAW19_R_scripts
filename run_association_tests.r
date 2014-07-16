@@ -37,9 +37,16 @@ print(head(data))
 print(dim(data))
 
 marker = names(data)[-c(1:9)]
+rs_dist = read.csv('/home/bulllab/gaw18/gaw19/data/chr3_MAP4_positions_from_snpnexus_30132.csv',header=T,stringsAsFactors=F)
+rs_dist = rs_dist[,c("SNP","chromPosition")]
+
 dist = str_replace(marker,"var_3_","")
-dist[str_detect(dist,"rs")] <- NA
+
+for(i in 1:nrow(rs_dist)){
+  dist[which(dist==rs_dist$SNP[i])] <- rs_dist$chromPosition[i]  
+}
 dist <- as.numeric(dist) #34 of them do not have distances
+
 map.info <- cbind.data.frame(marker,dist,stringsAsFactors=FALSE)
 rm(marker,dist)
 
