@@ -46,7 +46,7 @@ rm(marker,dist)
 # -------------- analysis begins here --------------#
 # column numbers where marker data are included
 first.G.col = 10
-last.G.col = ncol(data)-9 #87 polymorphic markers
+last.G.col = ncol(data) #87 polymorphic markers
 
 #25 output variables
                   
