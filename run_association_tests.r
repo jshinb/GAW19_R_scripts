@@ -30,7 +30,7 @@ rm(i)
 # (phenotype + genotype - created by 'Make_analysible_data.Rnw'
 # in JS's desktop-should mv file in the future)
 # each genetic marker column codes for the number of index allele
-data <- read.csv('/home/bulllab/gaw18/gaw19/data/chr3_pheno_MAP4_var_sites_MAF_0.01.csv',
+data <- read.csv('/home/bulllab/gaw18/gaw19/data/chr3_pheno_MAP4_var_sites_MAF.csv',
                  header=T, stringsAsFactors=F)
 print(head(data)) #with 10 variants (with MAF>=0.01
 
@@ -122,7 +122,7 @@ for(i in first.G.col:last.G.col){
     pval_lrt,pval_plrt,pval_score,pval_score_var_adj,pval_score_var_kurt_adj)
 
   if(i==first.G.col){
-    #do this once
+    #do this once - using the default sep=" " 
     write.table(rbind(names(res)),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
     quote=F,col.names=F,row.names=F,append=TRUE)
   }
