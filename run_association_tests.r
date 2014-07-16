@@ -26,6 +26,8 @@ for (i in 1:length(dir('/home/bulllab/jshin/pmlr11/R/',full.name=TRUE))){
 source(dir('/home/bulllab/jshin/pmlr11/R/',full.name=TRUE)[i])
 }
 rm(i)
+
+out.file = "/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res_no_imputation.out"
 # ------------------ read in data ------------------#
 # (phenotype + genotype - created by 'Make_analysible_data.Rnw'
 # in JS's desktop-should mv file in the future)
@@ -51,11 +53,17 @@ last.G.col = ncol(data)-9 #87 polymorphic markers
                   
 # convert the numeric 'hypt' column into factor for pmlr() function
 data$y <- as.factor(data$hypt)
+org.data <- data 
+rm(data)
+
 for(i in first.G.col:last.G.col){
   marker = names(data)[i]
   pos = map.info$dist[(i-9)]
-
   cat((i-9),'-th marker ', marker, "\n", sep="")
+
+  # creating a dataset with complete information 
+  # to prevent SKAT from imputing missing genotypes
+  data = na.omit(org.data[,c("y",marker)]) 
 
   n00 = sum(data$hypt==0 & data[,i]==0,na.rm=T)
   n01 = sum(data$hypt==0 & data[,i]==1,na.rm=T)
@@ -66,6 +74,17 @@ for(i in first.G.col:last.G.col){
   n = n00+n01+n02+n10+n11+n12
   missing_rate = 1-n/nrow(data)
   allele.freq = (n01+n11+2*(n02+n12))/n
+
+  if(allele.freq == 0){
+    beta_MLE <- SE.beta_MLE <- beta_PMLE <- SE.beta_PMLE <- NA
+    stat_lrt <- stat_plrt <- NA
+    stat_score <- stat_score_var_adj <- stat_score_var_kurt_adj <- NA
+    df_score_var_kurt_adj <- NA
+    pval_lrt <- pval_plrt <- pval_score <- NA
+    pval_score_var_adj <- pval_score_var_kurt_adj <- NA
+  }
+
+  if(allele.freq > 0 ){
   # applying MLE
   # fitting an additive model
   reg.model = as.formula(paste('y~',marker))
@@ -122,6 +141,8 @@ for(i in first.G.col:last.G.col){
   stat_score_var_kurt_adj <- sqrt(2*df_score_var_kurt_adj)*(skat.kurtosis.adj$Q-skat.kurtosis.adj$param$muQ)/sqrt(skat.kurtosis.adj$param$varQ)+df_score_var_kurt_adj
   pval_score_var_kurt_adj <- skat.kurtosis.adj$p.value
 
+  }
+
   res <- cbind.data.frame(marker,pos,allele.freq,
     n00,n01,n02,n10,n11,n12,n,missing_rate,
     beta_MLE,SE.beta_MLE,beta_PMLE,SE.beta_PMLE,
@@ -133,11 +154,11 @@ for(i in first.G.col:last.G.col){
   if(i==first.G.col){
     #printing column names
     #do this once - using the default sep=" " 
-    write.table(rbind(names(res)),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
+    write.table(rbind(names(res)),file=out.file,
     quote=F,col.names=F,row.names=F,append=TRUE,sep=" ")
   }
 
-  write.table(rbind(res),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
+  write.table(rbind(res),file=out.file,
     quote=F,col.names=F,row.names=F,append=TRUE,sep=" ")
 
 }
