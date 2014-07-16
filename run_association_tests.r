@@ -1,8 +1,7 @@
 # --- Loading necessary packages and functions ---- #
-#install.packages("SKAT")
-library(stringr)
-library(SKAT)
+require(stringr,lib.loc="/home/bulllab/jshin/R/x86_64-unknown-linux-gnu-library/3.0",quietly=T)
 
+require(SKAT,lib.loc="/home/bulllab/jshin/R/x86_64-unknown-linux-gnu-library/3.0",quietly=T)
 # source SKAT-functions modified in order to extract extra information
 # (such as kurtosis or df estimates)
 for (i in 1:length(dir('/home/bulllab/gaw18/gaw19/jshin/scripts/SKAT_R/',full.name=TRUE))) {
@@ -27,7 +26,7 @@ source(dir('/home/bulllab/jshin/pmlr11/R/',full.name=TRUE)[i])
 }
 rm(i)
 
-out.file = "/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res_no_imputation.out"
+out.file = "/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res_no_imputation_qsub.out"
 # ------------------ read in data ------------------#
 # (phenotype + genotype - created by 'Make_analysible_data.Rnw'
 # in JS's desktop-should mv file in the future)
@@ -57,13 +56,17 @@ org.data <- data
 rm(data)
 
 for(i in first.G.col:last.G.col){
-  marker = names(data)[i]
+  marker = names(org.data)[i]
   pos = map.info$dist[(i-9)]
   cat((i-9),'-th marker ', marker, "\n", sep="")
 
+  #missing genotype rates - in the data set with complet info on hypt.
+  missing_geno_rate = (sum(is.na(org.data[!is.na(org.data$y),marker]))/sum(!is.na(org.data$y))) 
+
   # creating a dataset with complete information 
   # to prevent SKAT from imputing missing genotypes
-  data = na.omit(org.data[,c("y",marker)]) 
+  no.missing.ind <- !is.na(org.data$y) & !is.na(org.data[,marker])
+  data = org.data[no.missing.ind,]
 
   n00 = sum(data$hypt==0 & data[,i]==0,na.rm=T)
   n01 = sum(data$hypt==0 & data[,i]==1,na.rm=T)
@@ -72,7 +75,6 @@ for(i in first.G.col:last.G.col){
   n11 = sum(data$hypt==1 & data[,i]==1,na.rm=T)
   n12 = sum(data$hypt==1 & data[,i]==2,na.rm=T)
   n = n00+n01+n02+n10+n11+n12
-  missing_rate = 1-n/nrow(data)
   allele.freq = (n01+n11+2*(n02+n12))/n
 
   if(allele.freq == 0){
@@ -144,7 +146,7 @@ for(i in first.G.col:last.G.col){
   }
 
   res <- cbind.data.frame(marker,pos,allele.freq,
-    n00,n01,n02,n10,n11,n12,n,missing_rate,
+    n00,n01,n02,n10,n11,n12,n,missing_geno_rate,
     beta_MLE,SE.beta_MLE,beta_PMLE,SE.beta_PMLE,
     stat_lrt,stat_plrt,
     stat_score,stat_score_var_adj,stat_score_var_kurt_adj,
@@ -163,6 +165,6 @@ for(i in first.G.col:last.G.col){
 
 }
 
-write.table(map.info, file = "/home/bulllab/gaw18/gaw19/results/chr3_MAP4,map",
+write.table(map.info, file = "/home/bulllab/gaw18/gaw19/results/chr3_MAP4.map",
   quote=F,col.names=T,row.names=F,sep=" ")
 
