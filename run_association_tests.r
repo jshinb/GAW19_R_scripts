@@ -55,7 +55,7 @@ for(i in first.G.col:last.G.col){
   marker = names(data)[i]
   pos = map.info$dist[(i-9)]
 
-  cat(i,'-th marker ', marker, "\n", sep="")
+  cat((i-9),'-th marker ', marker, "\n", sep="")
 
   n00 = sum(data$hypt==0 & data[,i]==0,na.rm=T)
   n01 = sum(data$hypt==0 & data[,i]==1,na.rm=T)
