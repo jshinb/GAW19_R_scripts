@@ -1,6 +1,6 @@
 # --- Loading necessary packages and functions ---- #
 #install.packages("SKAT")
-
+library(stringr)
 library(SKAT)
 
 # source SKAT-functions modified in order to extract extra information
@@ -32,20 +32,31 @@ rm(i)
 # each genetic marker column codes for the number of index allele
 data <- read.csv('/home/bulllab/gaw18/gaw19/data/chr3_pheno_MAP4_var_sites_MAF.csv',
                  header=T, stringsAsFactors=F)
-print(head(data)) #with 10 variants (with MAF>=0.01
+print(head(data)) 
+print(dim(data))
+
+marker = names(data)[-c(1:9)]
+dist = str_replace(marker,"var_3_","")
+dist[str_detect(dist,"rs")] <- NA
+dist <- as.numeric(dist) #34 of them do not have distances
+map.info <- cbind.data.frame(marker,dist,stringsAsFactors=FALSE)
+rm(marker,dist)
 
 # -------------- analysis begins here --------------#
 # column numbers where marker data are included
 first.G.col = 10
-last.G.col = 19
+last.G.col = ncol(data)-9 #87 polymorphic markers
 
 #25 output variables
                   
-pos <- NA #not-available yet
 # convert the numeric 'hypt' column into factor for pmlr() function
 data$y <- as.factor(data$hypt)
 for(i in first.G.col:last.G.col){
-  print(i)
+  marker = names(data)[i]
+  pos = map.info$dist[(i-9)]
+
+  cat(i,'-th marker ', marker, "\n", sep="")
+
   n00 = sum(data$hypt==0 & data[,i]==0,na.rm=T)
   n01 = sum(data$hypt==0 & data[,i]==1,na.rm=T)
   n02 = sum(data$hypt==0 & data[,i]==2,na.rm=T)
@@ -55,10 +66,8 @@ for(i in first.G.col:last.G.col){
   n = n00+n01+n02+n10+n11+n12
   missing_rate = 1-n/nrow(data)
   allele.freq = (n01+n11+2*(n02+n12))/n
-
   # applying MLE
   # fitting an additive model
-  marker = names(data)[i]
   reg.model = as.formula(paste('y~',marker))
   print(reg.model)
 
@@ -124,10 +133,16 @@ for(i in first.G.col:last.G.col){
   if(i==first.G.col){
     #do this once - using the default sep=" " 
     write.table(rbind(names(res)),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
-    quote=F,col.names=F,row.names=F,append=TRUE)
+    quote=F,col.names=T,row.names=F,append=TRUE,sep=" ")
   }
-
+  if(i!=first.G.col){
   write.table(rbind(res),file="/home/bulllab/gaw18/gaw19/results/chr3_MAP4_res.out",
-    quote=F,col.names=F,row.names=F,append=TRUE)
+    quote=F,col.names=F,row.names=F,append=TRUE,sep=" ")
 }
+
+}
+
+
+write.table(map.info, file = "/home/bulllab/gaw18/gaw19/results/chr3_MAP4,map",
+  quote=F,col.names=T,row.names=F,sep=" ")
 
