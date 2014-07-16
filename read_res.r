@@ -1,5 +1,7 @@
 # The file is used for summarizing association tests between 
 # hypertension status genetic markers in MAP4 region on chromosome 3
+# Do this on Desktop
+
 data = read.csv('~/Desktop/GAW19/data/proc/chr3_pheno_MAP4_var_sites_MAF.csv',
 	header=T,stringsAsFactors=F)
 res = read.table('~/Desktop/GAW19/results/chr3_MAP4_res_no_imputation_qsub.out',header=T,stringsAsFactors=F,sep=" ")
@@ -7,7 +9,7 @@ res = read.table('~/Desktop/GAW19/results/chr3_MAP4_res_no_imputation_qsub.out',
 # LDplot
 require(LDheatmap)
 require(genetics)
-marker.dat = data[,-c(1:9)]
+marker.dat = data[data$hypt==0,-c(1:9)]
 gdat = NULL
 i=1
 gdat <- as.genotype.allele.count(marker.dat[,i],alleles=c("0","1"))
@@ -18,7 +20,23 @@ names(gdat) <- names(marker.dat)
 gdat.dist <- as.vector(res$pos)
 gdat.dist[73] <- mean(res$pos[72:74],na.rm=T)
 
-my.heatmap <- LDheatmap(gdat,dist=gdat.dist)
+#which one are monomorphic in controls?
+#var_3_47894706
+#var_3_47894808
+#var_3_47898875
+#var_3_47898934
+#rs150980381
+#var_3_47913606
+#var_3_47913624
+#var_3_47951185
+#var_3_47957635
+#var_3_47957709
+#rs76333690
+#var_3_47969700
+#rs76535647
+#var_3_48016938
+mono.controls = res$n01+res$n02 == 0
+my.heatmap <- LDheatmap(gdat[,!mono.controls],genetic.dist=gdat.dist[!mono.controls])
 
 pdf('chr3_MAP4_pvals.pdf',width=11,height=4)
 par(mfrow=c(1,5))
