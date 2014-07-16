@@ -31,4 +31,4 @@ echo "Job started on: " `date`
 ##################################################################
 # Commands to run the job
 
-R --vanilla -f/home/bulllab/gaw18/gaw19/jshin/scripts/run_association_tests.r
+R --vanilla -f /home/bulllab/gaw18/gaw19/jshin/scripts/run_association_tests.r
