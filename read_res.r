@@ -61,3 +61,28 @@ with(res,plot(pos/10^6,-log10(pval_score_var_kurt_adj),pch=20,type="p",
 title('Score test with small-sample-adjusted variance and kurtosis')
 dev.off()
 
+
+pdf('chr3_MAP4_pvals_pairwise.pdf',width=8,height=8)
+par(mfrow=c(2,2))
+with(res,plot(-log10(pval_score_var_kurt_adj),-log10(pval_lrt),pch=20,type="p",
+	ylab="standard log likelihood",
+	xlab="score test with adjusted variance and kurtosis",ylim=c(0,4)));
+abline(0,1,col="red")
+
+
+with(res,plot(-log10(pval_score_var_kurt_adj),-log10(pval_plrt),pch=20,type="p",
+	ylab="penalized log likelihood",
+	xlab="score test with adjusted variance and kurtosis",ylim=c(0,4)));
+abline(0,1,col="red")
+
+with(res,plot(-log10(pval_score_var_kurt_adj),-log10(pval_score),pch=20,type="p",
+	ylab="score test",
+	xlab="score test with adjusted variance and kurtosis",ylim=c(0,4)));
+abline(0,1,col="red")
+
+with(res,plot(-log10(pval_score_var_kurt_adj),-log10(pval_score_var_adj),pch=20,type="p",
+	ylab="score test with adjusted variance",
+	xlab="score test with adjusted variance and kurtosis",ylim=c(0,4)));
+abline(0,1,col="red")
+dev.off()
+mean(data$hypt)#0.26
